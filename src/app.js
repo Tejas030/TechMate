@@ -67,10 +67,28 @@ app.delete("/user" , async(req,res)=>{
 })
 
 // This  is a sampLe route to update user details
-app.patch("/user" , async(req,res)=>{
-    const userId = req.body.userId
+app.patch("/user/:userId" , async(req,res)=>{
+
+    const userId = req.params?.userId
     const data = req.body;
+
     try {
+        ALLOWED_UPDATES = ["firstName" , "lastName" , "password" , "skills" , "about" , "photoUrl"]
+
+        const isValidOperation = Object.keys(data).every((update) => {
+
+            return ALLOWED_UPDATES.includes(update)
+        })
+        if(!isValidOperation)
+        {
+            return res.status(400).send("Invalid Updates")
+        }
+
+        if(data?.skills.length > 5)
+        {
+            return res.status(400).send("Skills should be less than 5")
+        }
+
         await User.findByIdAndUpdate({_id : userId}, data , {
             returnDocument : "before",
             runValidators : true

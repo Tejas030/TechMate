@@ -66,12 +66,15 @@ app.delete("/user" , async(req,res)=>{
     }
 })
 
-// This  is a samp,e route to update user details
+// This  is a sampLe route to update user details
 app.patch("/user" , async(req,res)=>{
     const userId = req.body.userId
     const data = req.body;
     try {
-        await User.findByIdAndUpdate({_id : userId}, data)
+        await User.findByIdAndUpdate({_id : userId}, data , {
+            returnDocument : "before",
+            runValidators : true
+        })
         res.send("Updated Succesfully");
         
     } catch (error) {

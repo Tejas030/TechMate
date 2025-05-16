@@ -1,14 +1,30 @@
 const express = require('express')
 const {connectDB} = require("./config/database.js")
 const { User } = require('./model/user.js')
+const {validateSignUpData} = require('./utils/validtion.js')
+const bcrypt = require("bcrypt")
 
 const app = express()
 
 app.use(express.json())
 
+// This is a sample route to signup
 app.post("/signup" , async(req,res)=>{
-    const user = new User(req.body)
+    
     try{
+        validateSignUpData(req)  //Validate the data
+
+        const {password} = req.body; //Extract password from request body
+        //Hash the password 
+        const passwordHash = await bcrypt.hash(password , 10)
+        console.log(passwordHash)
+
+        const user = new User({
+            firstName,
+            lastName,
+            email,
+            password : passwordHash,
+        })//After validation create a new user
         await user.save()
         res.send("User Details Saved Successfully");
 
@@ -18,6 +34,36 @@ app.post("/signup" , async(req,res)=>{
         res.status(400).send("Error in saving user " + err.message)
     }
     
+})
+
+// This is a sample route to login
+app.post("/login" , async(req,res)=>{
+    
+    try {
+
+        const {email , password} = req.body
+
+        const user = await User.findOne({email : email})
+
+        if(!user)
+        {
+            throw new error("Invalid email or password");
+        }
+
+        const isPasswordValid = await bcrypt.compare(password,user.password)
+
+        if(isPasswordValid)
+        {
+            res.send("Login Successful")
+        }
+        else{
+            throw new error("Invalid email or password");
+        }
+    }
+    catch(err)
+    {
+        res.status(400).send("Error in login " + err.message)
+    }
 })
 // This is a sample route to fetch user details
 app.get("/user" , async (req,res)=>{

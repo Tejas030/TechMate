@@ -3,10 +3,15 @@ const {connectDB} = require("./config/database.js")
 const { User } = require('./model/user.js')
 const {validateSignUpData} = require('./utils/validtion.js')
 const bcrypt = require("bcrypt")
+const cookieParser = require("cookie-parser")
+const jwt = require("jsonwebtoken")
+const {userAuth} = require("./middlewares/auth.js")
 
 const app = express()
 
 app.use(express.json())
+
+app.use(cookieParser)
 
 // This is a sample route to signup
 app.post("/signup" , async(req,res)=>{
@@ -54,9 +59,14 @@ app.post("/login" , async(req,res)=>{
 
         if(isPasswordValid)
         {
+            const token = await jwt.sign({_id : user._id} , "secretkey")
+
+            res.cookie("token" , token)
+
             res.send("Login Successful")
         }
-        else{
+        else
+        {
             throw new error("Invalid email or password");
         }
     }
@@ -64,6 +74,19 @@ app.post("/login" , async(req,res)=>{
     {
         res.status(400).send("Error in login " + err.message)
     }
+})
+
+app.get("/profile" , userAuth, async(req,res)=>{
+ try {
+    const user = req.user; //Extract user from request
+
+    res.send(user) //Send
+    
+ } catch (error) {
+    res.status(500).send("Error in fetching user " + error.message)
+    
+ }
+    
 })
 // This is a sample route to fetch user details
 app.get("/user" , async (req,res)=>{

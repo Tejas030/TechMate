@@ -1,94 +1,21 @@
 const express = require('express')
 const {connectDB} = require("./config/database.js")
-const { User } = require('./model/user.js')
-const {validateSignUpData} = require('./utils/validtion.js')
-const bcrypt = require("bcrypt")
 const cookieParser = require("cookie-parser")
-const jwt = require("jsonwebtoken")
-const {userAuth} = require("./middlewares/auth.js")
-
 const app = express()
 
 app.use(express.json())
 
 app.use(cookieParser)
+const authRouter = require("./routes/auth.js")
+const profileRouter = require("./routes/profile.js")            
+const requestRouter = require("./routes/request.js")
 
-// This is a sample route to signup
-app.post("/signup" , async(req,res)=>{
-    
-    try{
-        validateSignUpData(req)  //Validate the data
 
-        const {password} = req.body; //Extract password from request body
-        //Hash the password 
-        const passwordHash = await bcrypt.hash(password , 10)
-        console.log(passwordHash)
+app.use("/" , authRouter)
+app.use("/" , profileRouter)        
+app.use("/" , requestRouter)
 
-        const user = new User({
-            firstName,
-            lastName,
-            email,
-            password : passwordHash,
-        })//After validation create a new user
-        await user.save()
-        res.send("User Details Saved Successfully");
-
-    }
-    catch(err)
-    {
-        res.status(400).send("Error in saving user " + err.message)
-    }
-    
-})
-
-// This is a sample route to login
-app.post("/login" , async(req,res)=>{
-    
-    try {
-
-        const {email , password} = req.body
-
-        const user = await User.findOne({email : email})
-
-        if(!user)
-        {
-            throw new error("Invalid email or password");
-        }
-
-        const isPasswordValid = await bcrypt.compare(password,user.password)
-
-        if(isPasswordValid)
-        {
-            const token = await jwt.sign({_id : user._id} , "secretkey")
-
-            res.cookie("token" , token)
-
-            res.send("Login Successful")
-        }
-        else
-        {
-            throw new error("Invalid email or password");
-        }
-    }
-    catch(err)
-    {
-        res.status(400).send("Error in login " + err.message)
-    }
-})
-
-app.get("/profile" , userAuth, async(req,res)=>{
- try {
-    const user = req.user; //Extract user from request
-
-    res.send(user) //Send
-    
- } catch (error) {
-    res.status(500).send("Error in fetching user " + error.message)
-    
- }
-    
-})
-// This is a sample route to fetch user details
+/*// This is a sample route to fetch user details
 app.get("/user" , async (req,res)=>{
     const userDetail = req.body.email
     try {
@@ -170,6 +97,7 @@ app.patch("/user/:userId" , async(req,res)=>{
 
      }
 })
+*/
 
 const port = 3000
 

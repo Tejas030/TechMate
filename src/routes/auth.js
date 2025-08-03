@@ -46,11 +46,11 @@ authRouter.post("/login" , async(req,res)=>{
             throw new error("Invalid email or password");
         }
 
-        const isPasswordValid = await bcrypt.compare(password,user.password)
+        const isPasswordValid = await user.validatePassword(password) //Validate password using method from user model
 
         if(isPasswordValid)
         {
-            const token = await jwt.sign({_id : user._id} , "secretkey")
+            const token = await user.getJWT() //Get JWT token from user model
 
             res.cookie("token" , token)
 
@@ -77,4 +77,5 @@ authRouter.get("/logout" , async(req,res)=>{
         res.status(400).send("Error in logout " + error.message)
     }
 })
+
 module.exports = authRouter;

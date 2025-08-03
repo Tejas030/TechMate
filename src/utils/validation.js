@@ -23,6 +23,14 @@ const validateSignUpData = (req)=>{
         throw new Error("Last Name should be at least 3 characters long");
     }
 }
+
+const validateEditProfileData = (req)=>{
+    const allowedEditFields = ["firstName", "lastName", "gender", "age" , "photoUrl" , "about" ,"skills"];
+
+    const isEditAllowed = Object.keys(req.body).every((field)=> {allowedEditFields.includes(field)}) 
+    return isEditAllowed
+}
 module.exports = {
-    validateSignUpData
+    validateSignUpData,
+    validateEditProfileData
 }
